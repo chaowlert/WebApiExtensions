@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>WebApiExtensions</id>
+    <version>1.0.0.0</version>
+    <title>WebApi Extensions</title>
+    <authors>Chaowlert</authors>
+    <owners>Chaowlert</owners>
+    <projectUrl>https://github.com/chaowlert/WebApiExtensions</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Extension for Asp.net webapi 2</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2014</copyright>
+    <tags>web-api</tags>
+  </metadata>
+</package>
