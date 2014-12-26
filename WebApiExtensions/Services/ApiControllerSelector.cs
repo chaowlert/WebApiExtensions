@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
+using System.Threading;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.Controllers;
@@ -135,6 +136,7 @@ namespace WebApiExtensions.Services
             var type = typeof(ApiDescription);
             var parameterDescriptions = type.GetProperty("ParameterDescriptions");
             var supportedResponseFormatters = type.GetProperty("SupportedResponseFormatters");
+            var responseDescriptions = type.GetProperty("ResponseDescription");
             var responseFormatters = new Collection<MediaTypeFormatter> { JsonpFormatter.Default };
             foreach (var controllerKvp in GetControllerMapping().OrderBy(it => it.Key))
                 foreach (var actionLookup in GetActionMapping(controllerKvp.Value).OrderBy(it => it.Key))
@@ -151,9 +153,21 @@ namespace WebApiExtensions.Services
                             };
                             parameterDescriptions.SetValue(desc, getApiParameterDescription(actionDesc), null);
                             supportedResponseFormatters.SetValue(desc, responseFormatters, null);
+                            responseDescriptions.SetValue(desc, getResponseDescription(actionDesc), null);
                             list.Add(desc);
                         }
             return list;
+        }
+
+        ResponseDescription getResponseDescription(HttpActionDescriptor actionDescriptor)
+        {
+            var doc = _config.Services.GetDocumentationProvider();
+            return new ResponseDescription
+            {
+                DeclaredType = actionDescriptor.ControllerDescriptor.ControllerType,
+                Documentation = doc.GetResponseDocumentation(actionDescriptor),
+                ResponseType = actionDescriptor.ReturnType,
+            };
         }
 
         Collection<ApiParameterDescription> getApiParameterDescription(HttpActionDescriptor actionDescriptor)
@@ -164,12 +178,14 @@ namespace WebApiExtensions.Services
             {
                 if (param.ParameterName == "ignore")
                     continue;
+                if (_config.ParameterBindingRules.LookupBinding(param) != null)
+                    continue;
                 var desc = new ApiParameterDescription
                 {
                     Name = param.ParameterName,
                     ParameterDescriptor = param,
                     Documentation = doc.GetDocumentation(param),
-                    Source = ApiParameterSource.Unknown,
+                    Source = ApiParameterSource.FromUri,
                 };
                 list.Add(desc);
             }
