@@ -5,14 +5,12 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
-using System.Threading;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Description;
 using System.Web.Http.Dispatcher;
 using System.Web.Routing;
-using WebApiExtensions.Formatters;
 
 namespace WebApiExtensions.Services
 {
@@ -137,28 +135,38 @@ namespace WebApiExtensions.Services
             var parameterDescriptions = type.GetProperty("ParameterDescriptions");
             var supportedResponseFormatters = type.GetProperty("SupportedResponseFormatters");
             var responseDescriptions = type.GetProperty("ResponseDescription");
-            var responseFormatters = new Collection<MediaTypeFormatter> { JsonpFormatter.Default };
             foreach (var controllerKvp in GetControllerMapping().OrderBy(it => it.Key))
-                foreach (var actionLookup in GetActionMapping(controllerKvp.Value).OrderBy(it => it.Key))
-                    foreach (var actionDesc in actionLookup)
-                        foreach (var method in actionDesc.SupportedHttpMethods)
-                        {
-                            var desc = new ApiDescription
-                            {
-                                ActionDescriptor = actionDesc,
-                                Documentation = document.GetDocumentation(actionDesc),
-                                HttpMethod = method,
-                                RelativePath = getRelativePath(controllerKvp.Key, actionDesc),
-                                Route = null,
-                            };
-                            parameterDescriptions.SetValue(desc, getApiParameterDescription(actionDesc), null);
-                            supportedResponseFormatters.SetValue(desc, responseFormatters, null);
-                            responseDescriptions.SetValue(desc, getResponseDescription(actionDesc), null);
-                            list.Add(desc);
-                        }
+            foreach (var actionLookup in GetActionMapping(controllerKvp.Value).OrderBy(it => it.Key))
+            foreach (var actionDesc in actionLookup)
+            foreach (var method in actionDesc.SupportedHttpMethods)
+            {
+                var desc = new ApiDescription
+                {
+                    ActionDescriptor = actionDesc,
+                    Documentation = document.GetDocumentation(actionDesc),
+                    HttpMethod = method,
+                    RelativePath = getRelativePath(controllerKvp.Key, actionDesc),
+                    Route = null,
+                };
+                parameterDescriptions.SetValue(desc, getApiParameterDescription(actionDesc), null);
+                supportedResponseFormatters.SetValue(desc, getResponseFormatters(actionDesc), null);
+                responseDescriptions.SetValue(desc, getResponseDescription(actionDesc), null);
+                list.Add(desc);
+            }
             return list;
         }
 
+        Collection<MediaTypeFormatter> getResponseFormatters(HttpActionDescriptor actionDescriptor)
+        {
+            var responseFormatters = new Collection<MediaTypeFormatter>();
+            foreach (var formatter in _config.Formatters)
+            {
+                if (!formatter.CanWriteType(actionDescriptor.ReturnType))
+                    continue;
+                responseFormatters.Add(formatter);
+            }
+            return responseFormatters;
+        }
         ResponseDescription getResponseDescription(HttpActionDescriptor actionDescriptor)
         {
             var doc = _config.Services.GetDocumentationProvider();
@@ -176,10 +184,6 @@ namespace WebApiExtensions.Services
             var list = new Collection<ApiParameterDescription>();
             foreach (var param in actionDescriptor.GetParameters())
             {
-                if (param.ParameterName == "ignore")
-                    continue;
-                if (_config.ParameterBindingRules.LookupBinding(param) != null)
-                    continue;
                 var desc = new ApiParameterDescription
                 {
                     Name = param.ParameterName,

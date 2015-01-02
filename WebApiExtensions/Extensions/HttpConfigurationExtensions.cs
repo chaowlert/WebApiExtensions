@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Web.Http.Controllers;
+using System.Web.Http.Description;
 using System.Web.Http.Dispatcher;
 using Newtonsoft.Json;
 using WebApiExtensions.Formatters;
@@ -40,6 +41,7 @@ namespace System.Web.Http
             var controllerSelector = new ApiControllerSelector(config);
             config.Services.Replace(typeof(IHttpControllerSelector), controllerSelector);
             config.Services.Replace(typeof(IHttpActionSelector), controllerSelector);
+            config.Services.Replace(typeof(IApiExplorer), controllerSelector);
             config.Routes.MapHttpRoute("default", "{*path}", null,
                 new
                 {
