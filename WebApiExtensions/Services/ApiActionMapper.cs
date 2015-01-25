@@ -39,8 +39,8 @@ namespace WebApiExtensions.Services
             var param = action.GetParameters();
             if (param.Take(1).Any(p => p.ParameterName == "id"))
             {
-                if (action.ActionName == "items")
-                    throw new InvalidOperationException();
+                //if (action.ActionName == "items")
+                //    throw new InvalidOperationException("'items' action cannot contain 'id' parameter");
 
                 //set route attribute for id
                 var id = param[0];
@@ -63,7 +63,7 @@ namespace WebApiExtensions.Services
             else
             {
                 if (action.ActionName == "item")
-                    throw new InvalidOperationException();
+                    throw new InvalidOperationException("'item' action must have 'id' parameter");
                 if (action.ActionName == "items")
                 {
                     if (_itemsStore == null)

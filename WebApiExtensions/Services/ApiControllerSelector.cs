@@ -29,12 +29,13 @@ namespace WebApiExtensions.Services
                           select new
                           {
                               Name = type.Name.Substring(0, type.Name.Length - 10).ToLower(),
-                              Area = type.Namespace.Split(new[] { ".Controllers" }, StringSplitOptions.None).Last().ToLower(),
+                              Area = (type.Namespace + ".").Split(new[] {".Controllers."}, StringSplitOptions.None).Last().ToLower(),
                               Type = type,
-                          } into item
-                          group item by item.Area).ToDictionary(g => g.Key,
-                                                                g => g.ToDictionary(item => item.Name,
-                                                                                    item => new ApiActionMapper(config, (g.Key == string.Empty ? string.Empty : g.Key + '/') + item.Name, item.Type)));
+                          }
+                          into item
+                          group item by item.Area.Trim('.')).ToDictionary(g => g.Key,
+                              g => g.ToDictionary(item => item.Name,
+                                  item => new ApiActionMapper(config, (g.Key == string.Empty ? string.Empty : g.Key + '/') + item.Name, item.Type)));
             _noAreaStore = stores.GetValueOrDefault(string.Empty);
             if (_noAreaStore != null)
                 stores.Remove(string.Empty);
@@ -161,7 +162,8 @@ namespace WebApiExtensions.Services
             var responseFormatters = new Collection<MediaTypeFormatter>();
             foreach (var formatter in _config.Formatters)
             {
-                if (!formatter.CanWriteType(actionDescriptor.ReturnType))
+                if (actionDescriptor.ReturnType == null ||
+                    !formatter.CanWriteType(actionDescriptor.ReturnType))
                     continue;
                 responseFormatters.Add(formatter);
             }
