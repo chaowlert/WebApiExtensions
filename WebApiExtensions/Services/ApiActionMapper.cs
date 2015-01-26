@@ -37,11 +37,14 @@ namespace WebApiExtensions.Services
         Dictionary<string, HttpActionDescriptor> SelectStore(HttpActionDescriptor action)
         {
             var param = action.GetParameters();
-            if (param.Take(1).Any(p => p.ParameterName == "id"))
+            if (action.ActionName == "items")
             {
-                //if (action.ActionName == "items")
-                //    throw new InvalidOperationException("'items' action cannot contain 'id' parameter");
-
+                if (_itemsStore == null)
+                    _itemsStore = new Dictionary<string, HttpActionDescriptor>();
+                return _itemsStore;
+            }
+            else if (param.Take(1).Any(p => p.ParameterName == "id"))
+            {
                 //set route attribute for id
                 var id = param[0];
                 if (id.ParameterBinderAttribute == null)
@@ -64,18 +67,9 @@ namespace WebApiExtensions.Services
             {
                 if (action.ActionName == "item")
                     throw new InvalidOperationException("'item' action must have 'id' parameter");
-                if (action.ActionName == "items")
-                {
-                    if (_itemsStore == null)
-                        _itemsStore = new Dictionary<string, HttpActionDescriptor>();
-                    return _itemsStore;
-                }
-                else
-                {
-                    if (_nonItemActionStores == null)
-                        _nonItemActionStores = new Dictionary<string, Dictionary<string, HttpActionDescriptor>>();
-                    return _nonItemActionStores.GetOrAdd(action.ActionName, key => new Dictionary<string, HttpActionDescriptor>());
-                }
+                if (_nonItemActionStores == null)
+                    _nonItemActionStores = new Dictionary<string, Dictionary<string, HttpActionDescriptor>>();
+                return _nonItemActionStores.GetOrAdd(action.ActionName, key => new Dictionary<string, HttpActionDescriptor>());
             }            
         }
 
