@@ -103,6 +103,15 @@ namespace WebApiExtensions.Services
                 return true;
             }
 
+            if (_nonItemActionStores != null)
+            {
+                var nonItemActionStore = _nonItemActionStores.GetValueOrDefault(id);
+                if (nonItemActionStore == null)
+                    return false;
+                values.Add("action", id);
+                values.Add("actionStore", nonItemActionStore);
+                return true;
+            }
             if (_itemStore != null)
             {
                 values.Add("action", "item");
@@ -110,14 +119,7 @@ namespace WebApiExtensions.Services
                 values.Add("actionStore", _itemStore);
                 return true;
             }
-            if (_nonItemActionStores == null)
-                return false;
-            var nonItemActionStore = _nonItemActionStores.GetValueOrDefault(id);
-            if (nonItemActionStore == null)
-                return false;
-            values.Add("action", id);
-            values.Add("actionStore", nonItemActionStore);
-            return true;
+            return false;
         }
 
         ILookup<string, HttpActionDescriptor> _actionMapping;
