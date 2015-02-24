@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Reflection;
 using System.Web.Http.Controllers;
 using System.Web.Http.Description;
 using System.Web.Http.Dispatcher;
+using System.Web.Http.ModelBinding;
 using Newtonsoft.Json;
 using WebApiExtensions.Formatters;
 using WebApiExtensions.Handlers;
@@ -51,6 +53,10 @@ namespace System.Web.Http
 
         public static void ExtendModelBinding(this HttpConfiguration config)
         {
+            var getBinders = typeof (DefaultActionValueBinder).GetMethod("GetDefaultParameterBinders", BindingFlags.Static | BindingFlags.NonPublic);
+            var rules = (ParameterBindingRulesCollection) getBinders.Invoke(null, null);
+            if (config.ParameterBindingRules.Contains(rules[2]))
+                config.ParameterBindingRules.Remove(rules[2]);
             config.Services.Replace(typeof(IActionValueBinder), new ApiActionValueBinder());
         }
 

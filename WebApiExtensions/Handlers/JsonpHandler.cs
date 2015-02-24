@@ -28,7 +28,7 @@ namespace WebApiExtensions.Handlers
                 {
                     if ((int)response.StatusCode >= 400)
                     {
-                        response = request.CreateApiErrorResponse(response.StatusCode, null);
+                        response = request.CreateErrorResponse(response.StatusCode, (string)null);
                         response.StatusCode = HttpStatusCode.OK;
                     }
                     else

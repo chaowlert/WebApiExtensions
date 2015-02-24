@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http.Headers;
+using System.Net.Http;
 using System.Reflection;
 using System.Web.Http;
 using System.Web.Http.Controllers;
@@ -34,8 +34,13 @@ namespace WebApiExtensions.Services
         static HttpParameterBinding GetParameterBinding(HttpParameterDescriptor parameter)
         {
             var attr = parameter.ParameterBinderAttribute;
+            bool fromBody = false;
             if (attr != null)
-                return attr.GetBinding(parameter);
+            {
+                fromBody = attr is FromBodyAttribute;
+                if (!fromBody)
+                    return attr.GetBinding(parameter);
+            }
 
             var bindingRules = parameter.Configuration.ParameterBindingRules;
             var binding = bindingRules.LookupBinding(parameter);
@@ -54,14 +59,12 @@ namespace WebApiExtensions.Services
                 parameter.ActionDescriptor.Properties["AZ_ValueBinder"] = string.Empty; //anything not null
             }
 
-            if (parameter.ParameterType == typeof(byte[]))
-                return new ByteArrayParameterBinding(parameter, willReadBody);
-            if (parameter.ParameterType == typeof(MediaTypeHeaderValue))
-                return new MediaTypeParameterBinding(parameter, willReadBody);
+            if (parameter.ParameterType == typeof(HttpContent))
+                return new MultiPartHttpContentParameterBinding(parameter, willReadBody);
 
             var isObject = _getTypeCode.FastInvoke(null, parameter.ParameterType).ToString() == "Object";
             var validator = isObject ? parameter.Configuration.Services.GetBodyModelValidator() : null;
-            return new ApiParameterBinding(parameter, willReadBody, validator, isObject);
+            return new ApiParameterBinding(parameter, willReadBody, validator, isObject, fromBody);
         }
 
     }

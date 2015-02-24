@@ -6,7 +6,7 @@ using System.Web.Http.Metadata;
 
 namespace WebApiExtensions.Services
 {
-    public class MediaTypeParameterBinding : HttpParameterBinding
+    public class MultiPartHttpContentParameterBinding : HttpParameterBinding
     {
         readonly bool _willReadBody;
         public override bool WillReadBody
@@ -14,7 +14,7 @@ namespace WebApiExtensions.Services
             get { return _willReadBody; }
         }
 
-        public MediaTypeParameterBinding(HttpParameterDescriptor parameter, bool willReadBody)
+        public MultiPartHttpContentParameterBinding(HttpParameterDescriptor parameter, bool willReadBody)
             : base(parameter)
         {
             _willReadBody = willReadBody;
@@ -25,13 +25,10 @@ namespace WebApiExtensions.Services
             if (_willReadBody)
                 await actionContext.Request.ReadFormDataAsync(this.Descriptor.Configuration, cancellationToken);
 
-            var paramName = this.Descriptor.ParameterName;
-            var name = paramName.EndsWith("MediaType")
-                ? paramName.Substring(0, paramName.Length - 9)
-                : paramName;
-            var model = actionContext.Request.GetMultiPartMediaType(name);
+            var model = actionContext.Request.GetMultiPartHttpContent(this.Descriptor.ParameterName);
 
             SetValue(actionContext, model);
         }
+
     }
 }

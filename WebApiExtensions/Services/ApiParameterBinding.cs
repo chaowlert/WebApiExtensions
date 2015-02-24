@@ -20,11 +20,13 @@ namespace WebApiExtensions.Services
 
         readonly IBodyModelValidator _validator;
         readonly bool _isObject;
-        public ApiParameterBinding(HttpParameterDescriptor descriptor, bool willReadBody, IBodyModelValidator validator, bool isObject) : base(descriptor)
+        readonly bool _fromBody;
+        public ApiParameterBinding(HttpParameterDescriptor descriptor, bool willReadBody, IBodyModelValidator validator, bool isObject, bool fromBody) : base(descriptor)
         {
             _willReadBody = willReadBody;
             _validator = validator;
             _isObject = isObject;
+            _fromBody = fromBody;
         }
 
         public override async Task ExecuteBindingAsync(ModelMetadataProvider metadataProvider, HttpActionContext actionContext, CancellationToken cancellationToken)
@@ -41,7 +43,9 @@ namespace WebApiExtensions.Services
 
         object GetObjectValue(HttpActionContext actionContext)
         {
-            var json = actionContext.Request.GetJsonParameter(this.Descriptor.ParameterName);
+            var json = _fromBody 
+                ? actionContext.Request.GetJsonParameters()
+                : actionContext.Request.GetJsonParameter(this.Descriptor.ParameterName);
             if (json == null)
             {
                 if (this.Descriptor.IsOptional)
