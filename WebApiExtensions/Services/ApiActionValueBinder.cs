@@ -60,7 +60,7 @@ namespace WebApiExtensions.Services
             }
 
             if (parameter.ParameterType == typeof(HttpContent))
-                return new MultiPartHttpContentParameterBinding(parameter, willReadBody);
+                return new MultiPartHttpContentParameterBinding(parameter);
 
             var isObject = _getTypeCode.FastInvoke(null, parameter.ParameterType).ToString() == "Object";
             var validator = isObject ? parameter.Configuration.Services.GetBodyModelValidator() : null;
