@@ -74,10 +74,7 @@ namespace System.Net.Http
         public static HttpContent GetMultiPartHttpContent(this HttpRequestMessage request, string name)
         {
             var dict = (Dictionary<string, HttpContent>)request.Properties.GetValueOrDefault("AZ_MultiPartHttpContent");
-            if (dict != null)
-                return dict.GetValueOrDefault(name);
-            else
-                return null;
+            return dict?.GetValueOrDefault(name);
         }
 
         public static JToken GetJsonParameters(this HttpRequestMessage request)
@@ -93,10 +90,7 @@ namespace System.Net.Http
                 return json;
 
             var formData = request.GetJsonParameters();
-            if (formData != null)
-                return formData[name];
-            else
-                return null;
+            return formData?[name];
         }
 
         public static string GetMessage(this HttpRequestMessage request)

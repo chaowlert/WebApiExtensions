@@ -12,7 +12,7 @@ namespace WebApiExtensions.Services
 {
     public class ApiActionMapper
     {
-        public HttpControllerDescriptor ControllerDescriptor { get; private set; }
+        public HttpControllerDescriptor ControllerDescriptor { get; }
 
         Dictionary<string, HttpActionDescriptor> _itemStore;
         Dictionary<string, HttpActionDescriptor> _itemsStore;
@@ -39,9 +39,7 @@ namespace WebApiExtensions.Services
             var param = action.GetParameters();
             if (action.ActionName == "items")
             {
-                if (_itemsStore == null)
-                    _itemsStore = new Dictionary<string, HttpActionDescriptor>();
-                return _itemsStore;
+                return _itemsStore ?? (_itemsStore = new Dictionary<string, HttpActionDescriptor>());
             }
             else if (param.Take(1).Any(p => p.ParameterName == "id"))
             {
@@ -52,9 +50,7 @@ namespace WebApiExtensions.Services
 
                 if (action.ActionName == "item")
                 {
-                    if (_itemStore == null)
-                        _itemStore = new Dictionary<string, HttpActionDescriptor>();
-                    return _itemStore;
+                    return _itemStore ?? (_itemStore = new Dictionary<string, HttpActionDescriptor>());
                 }
                 else
                 {
@@ -103,11 +99,9 @@ namespace WebApiExtensions.Services
                 return true;
             }
 
-            if (_nonItemActionStores != null)
+            var nonItemActionStore = _nonItemActionStores?.GetValueOrDefault(id);
+            if (nonItemActionStore != null)
             {
-                var nonItemActionStore = _nonItemActionStores.GetValueOrDefault(id);
-                if (nonItemActionStore == null)
-                    return false;
                 values.Add("action", id);
                 values.Add("actionStore", nonItemActionStore);
                 return true;

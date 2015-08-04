@@ -37,8 +37,7 @@ namespace WebApiExtensions.Services
             var model = GetObjectValue(actionContext);
             SetValue(actionContext, model);
 
-            if (_validator != null)
-                _validator.Validate(model, this.Descriptor.ParameterType, metadataProvider, actionContext, this.Descriptor.ParameterName);
+            _validator?.Validate(model, this.Descriptor.ParameterType, metadataProvider, actionContext, this.Descriptor.ParameterName);
         }
 
         object GetObjectValue(HttpActionContext actionContext)

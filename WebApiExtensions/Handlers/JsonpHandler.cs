@@ -37,7 +37,7 @@ namespace WebApiExtensions.Handlers
                 else
                 {
                     var objContent = response.Content as ObjectContent;
-                    if (objContent != null && objContent.Formatter is JsonpFormatter)
+                    if (objContent?.Formatter is JsonpFormatter)
                         response.StatusCode = HttpStatusCode.OK;
                 }
             }

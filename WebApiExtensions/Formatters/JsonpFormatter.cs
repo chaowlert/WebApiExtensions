@@ -11,13 +11,9 @@ namespace WebApiExtensions.Formatters
 {
     public class JsonpFormatter : JsonMediaTypeFormatter
     {
-        static readonly JsonpFormatter _default = new JsonpFormatter();
         string _callbackQueryParameter;
 
-        public static JsonpFormatter Default
-        {
-            get { return _default; }
-        }
+        public static JsonpFormatter Default { get; } = new JsonpFormatter();
 
         public bool IsJsonp { get; set; }
 
@@ -65,10 +61,9 @@ namespace WebApiExtensions.Formatters
         async Task writeJsonpToStreamAsync(Type type, object value, Stream stream, HttpContent content, TransportContext transportContext)
         {
             var error = value as HttpError;
-            if (error != null)
-                error.Add("Error", true);
+            error?.Add("Error", true);
 
-            var encoding = SelectCharacterEncoding(content == null ? null : content.Headers);
+            var encoding = SelectCharacterEncoding(content?.Headers);
             using (var writer = new StreamWriter(stream, encoding, 4096, true))
             {
                 writer.Write("/**/ " + CallbackQueryParameter + "(");
