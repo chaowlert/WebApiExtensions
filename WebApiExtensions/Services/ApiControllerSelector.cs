@@ -123,10 +123,7 @@ namespace WebApiExtensions.Services
         }
 
         Collection<ApiDescription> _apiDescriptions;
-        public Collection<ApiDescription> ApiDescriptions
-        {
-            get { return _apiDescriptions ?? (_apiDescriptions = generateApiDescriptions()); }
-        }
+        public Collection<ApiDescription> ApiDescriptions => _apiDescriptions ?? (_apiDescriptions = generateApiDescriptions());
 
         Collection<ApiDescription> generateApiDescriptions()
         {
