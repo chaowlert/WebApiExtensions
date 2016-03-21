@@ -128,6 +128,7 @@ namespace System.Net.Http
                     var content = new ByteArrayContent(bytes);
                     if (h.ContentType != null)
                         content.Headers.ContentType = h.ContentType;
+                    content.Headers.ContentDisposition = h.ContentDisposition;
                     httpContentDict.Add(name, content);
                 }
                 else
@@ -153,7 +154,7 @@ namespace System.Net.Http
             return (string)routeData.Values[key];
         }
 
-        public static HttpResponseMessage CreateErrorResponse(this HttpRequestMessage request, HttpStatusCode statusCode, string message, JObject additionalInfo = null)
+        public static HttpResponseMessage CreateErrorCodeResponse(this HttpRequestMessage request, HttpStatusCode statusCode, string message, JObject additionalInfo = null)
         {
             var error = new HttpError(message)
             {
@@ -169,7 +170,7 @@ namespace System.Net.Http
             {
                 { "ParamName", paramName },
             };
-            return request.CreateErrorResponse(HttpStatusCode.BadRequest, "Parameter is required", additionalInfo);
+            return request.CreateErrorCodeResponse(HttpStatusCode.BadRequest, "Parameter is required", additionalInfo);
         }
         public static HttpResponseMessage CreateBadFormatResponse(this HttpRequestMessage request, string paramName, string format = null)
         {
@@ -179,7 +180,15 @@ namespace System.Net.Http
             };
             if (format != null)
                 additionalInfo["Format"] = format;
-            return request.CreateErrorResponse(HttpStatusCode.BadRequest, "Input value is incorrect format", additionalInfo);
+            return request.CreateErrorCodeResponse(HttpStatusCode.BadRequest, "Input value is incorrect format", additionalInfo);
+        }
+        public static HttpResponseMessage CreateNotFoundResponse(this HttpRequestMessage request, string type)
+        {
+            var additionalInfo = new JObject
+            {
+                { "Type", type },
+            };
+            return request.CreateErrorCodeResponse(HttpStatusCode.NotFound, "Object is not found", additionalInfo);
         }
     }
 }
