@@ -182,11 +182,12 @@ namespace System.Net.Http
                 additionalInfo["Format"] = format;
             return request.CreateErrorCodeResponse(HttpStatusCode.BadRequest, "Input value is incorrect format", additionalInfo);
         }
-        public static HttpResponseMessage CreateNotFoundResponse(this HttpRequestMessage request, string type)
+        public static HttpResponseMessage CreateNotFoundResponse(this HttpRequestMessage request, string type, string id)
         {
             var additionalInfo = new JObject
             {
                 { "Type", type },
+                { "Id", id },
             };
             return request.CreateErrorCodeResponse(HttpStatusCode.NotFound, "Object is not found", additionalInfo);
         }
