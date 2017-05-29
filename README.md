@@ -4,7 +4,7 @@ WebApiExtension
 Extension for Asp.net webapi 2
 
 ### Usage
-####1. Extend model binding
+#### 1. Extend model binding
 This will allow binding multiple complex models on request
 
 **Configuration**  
@@ -34,7 +34,7 @@ $.get('/path', {
 - For file upload, type byte[] will return content byte array, and type MediaTypeHeaderValue will return media header information
 
 ---
-####2. Extend XML formatter
+#### 2. Extend XML formatter
 This will use Json.net for xml formatting
 
 **Configuration**  
@@ -46,7 +46,7 @@ GlobalConfiguration.Configuration.ExtendXmlFormatter()
 - This formatter use Json.net to resolve types, so this will be better than XmlFormatter, since it will support JObject, Dictionary, dynamic, and more
 
 ---
-####3. Support Graph Controller
+#### 3. Support Graph Controller
 This will simplify api path to map with code structure. Api path concept will be similar to Facebook graph API.
 
 **Configuration**  
@@ -77,19 +77,19 @@ other method name (photos) with id will map to `/users/id/photos`, this is suita
 You can also easily add area to group controllers. Such as /Controllers/Admin/UsersController.cs will map to `/admin/users`
 
 ---
-####4. Support JsonP
+#### 4. Support JsonP
 This will allow web api to support JsonP
 
 **Configuration**  
 ```
-GlobalConfiguration.Configuration.SupportGraphController()
+GlobalConfiguration.Configuration.SupportJsonp()
 ```
 **Example**  
 Just add callback to query string
 >/path?callback=xxx
 
 ---
-####5. Support Action Injection
+#### 5. Support Action Injection
 This will allow to inject services into actions
 
 **Configuration**  
