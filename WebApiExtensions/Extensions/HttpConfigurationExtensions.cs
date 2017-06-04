@@ -38,13 +38,13 @@ namespace System.Web.Http
                 config.Formatters.Add(extendedXmlFormatter);
         }
 
-        public static void SupportGraphController(this HttpConfiguration config)
+        public static void SupportGraphController(this HttpConfiguration config, string prefix = "")
         {
             var controllerSelector = new ApiControllerSelector(config);
             config.Services.Replace(typeof(IHttpControllerSelector), controllerSelector);
             config.Services.Replace(typeof(IHttpActionSelector), controllerSelector);
             config.Services.Replace(typeof(IApiExplorer), controllerSelector);
-            config.Routes.MapHttpRoute("default", "{*path}", null,
+            config.Routes.MapHttpRoute("default", prefix + "{*path}", null,
                 new
                 {
                     controller = controllerSelector

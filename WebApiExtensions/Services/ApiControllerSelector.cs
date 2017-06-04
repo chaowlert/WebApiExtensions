@@ -5,16 +5,15 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
-using System.Web;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Description;
 using System.Web.Http.Dispatcher;
-using System.Web.Routing;
+using System.Web.Http.Routing;
 
 namespace WebApiExtensions.Services
 {
-    public class ApiControllerSelector : IHttpControllerSelector, IHttpActionSelector, IRouteConstraint, IApiExplorer
+    public class ApiControllerSelector : IHttpControllerSelector, IHttpActionSelector, IHttpRouteConstraint, IApiExplorer
     {
         readonly Dictionary<string, ApiActionMapper> _noAreaStore;
         readonly Dictionary<string, Dictionary<string, ApiActionMapper>> _areaStores;
@@ -43,7 +42,7 @@ namespace WebApiExtensions.Services
                 _areaStores = stores;
         }
 
-        public bool Match(HttpContextBase httpContext, Route route, string parameterName, RouteValueDictionary values, RouteDirection routeDirection)
+        public bool Match(HttpRequestMessage request, IHttpRoute route, string parameterName, IDictionary<string, object> values, HttpRouteDirection routeDirection)
         {
             var path = (string)values["path"];
             if (path == null)
@@ -65,7 +64,7 @@ namespace WebApiExtensions.Services
             return processController(values, segments, i, store);
         }
 
-        static bool processController(RouteValueDictionary values, string[] segments, int i, Dictionary<string, ApiActionMapper> store)
+        static bool processController(IDictionary<string, object> values, string[] segments, int i, Dictionary<string, ApiActionMapper> store)
         {
             var controller = segments[i];
             ApiActionMapper selector;
@@ -133,9 +132,12 @@ namespace WebApiExtensions.Services
             var parameterDescriptions = type.GetProperty("ParameterDescriptions");
             var supportedResponseFormatters = type.GetProperty("SupportedResponseFormatters");
             var responseDescriptions = type.GetProperty("ResponseDescription");
-            foreach (var controllerKvp in GetControllerMapping().OrderBy(it => it.Key))
-            foreach (var actionLookup in GetActionMapping(controllerKvp.Value).OrderBy(it => it.Key))
-            foreach (var actionDesc in actionLookup)
+            foreach (var controllerKvp in GetControllerMapping()
+                .Where(it => !it.Value.GetCustomAttributes<ApiExplorerSettingsAttribute>().Any(attr => attr.IgnoreApi))
+                .OrderBy(it => it.Key))
+            foreach (var actionLookup in GetActionMapping(controllerKvp.Value).OrderBy(it => actionTransform(it.Key)))
+            foreach (var actionDesc in actionLookup
+                .Where(it => !it.GetCustomAttributes<ApiExplorerSettingsAttribute>().Any(attr => attr.IgnoreApi)))
             foreach (var method in actionDesc.SupportedHttpMethods)
             {
                 var desc = new ApiDescription
@@ -152,6 +154,16 @@ namespace WebApiExtensions.Services
                 list.Add(desc);
             }
             return list;
+        }
+
+        static string actionTransform(string action)
+        {
+            switch (action)
+            {
+                case "items": return "  items";
+                case "item": return " item";
+                default: return action;
+            }
         }
 
         Collection<MediaTypeFormatter> getResponseFormatters(HttpActionDescriptor actionDescriptor)

@@ -1,7 +1,7 @@
-﻿using System.Collections.Specialized;
+﻿using System;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Net.Http;
-using System.Web;
 using System.Web.Http;
 using System.Web.Http.Dependencies;
 
@@ -15,7 +15,7 @@ public static class Extensions
     public static string ToQueryString(this NameValueCollection data)
     {
         var strs = data.Cast<string>()
-            .Select(name => string.Concat(name, "=", HttpUtility.UrlEncode(data[name])));
+            .Select(name => string.Concat(name, "=", Uri.EscapeDataString(data[name])));
         return string.Join("&", strs);
     }
     
