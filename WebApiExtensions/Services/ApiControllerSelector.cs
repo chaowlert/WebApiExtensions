@@ -9,11 +9,10 @@ using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Description;
 using System.Web.Http.Dispatcher;
-using System.Web.Http.Routing;
 
 namespace WebApiExtensions.Services
 {
-    public class ApiControllerSelector : IHttpControllerSelector, IHttpActionSelector, IHttpRouteConstraint, IApiExplorer
+    public class ApiControllerSelector : IHttpControllerSelector, IHttpActionSelector, IApiExplorer
     {
         readonly Dictionary<string, ApiActionMapper> _noAreaStore;
         readonly Dictionary<string, Dictionary<string, ApiActionMapper>> _areaStores;
@@ -42,34 +41,11 @@ namespace WebApiExtensions.Services
                 _areaStores = stores;
         }
 
-        public bool Match(HttpRequestMessage request, IHttpRoute route, string parameterName, IDictionary<string, object> values, HttpRouteDirection routeDirection)
-        {
-            var path = (string)values["path"];
-            if (path == null)
-                return false;
-            var segments = path.Split(new[]
-            {
-                '/'
-            }, StringSplitOptions.RemoveEmptyEntries);
-
-            var i = 0;
-            Dictionary<string, ApiActionMapper> store;
-            if (_areaStores != null && segments.Length > 1 && _areaStores.TryGetValue(segments[0], out store))
-                i = 1;
-            else if (_noAreaStore != null)
-                store = _noAreaStore;
-            else
-                return false;
-
-            return processController(values, segments, i, store);
-        }
-
-        static bool processController(IDictionary<string, object> values, string[] segments, int i, Dictionary<string, ApiActionMapper> store)
+        static HttpControllerDescriptor processController(IDictionary<string, object> values, string[] segments, int i, Dictionary<string, ApiActionMapper> store)
         {
             var controller = segments[i];
-            ApiActionMapper selector;
-            if (!store.TryGetValue(controller, out selector))
-                return false;
+            if (!store.TryGetValue(controller, out var selector))
+                return null;
 
             return selector.Process(values, segments, i + 1);
         }
@@ -99,7 +75,24 @@ namespace WebApiExtensions.Services
 
         public HttpControllerDescriptor SelectController(HttpRequestMessage request)
         {
-            return (HttpControllerDescriptor)request.GetRouteData().Values["controllerDescriptor"];
+            var values = request.GetRouteData().Values;
+            var path = (string)values["path"];
+            if (path == null)
+                return null;
+            var segments = path.Split(new[]
+            {
+                '/'
+            }, StringSplitOptions.RemoveEmptyEntries);
+
+            var i = 0;
+            if (_areaStores != null && segments.Length > 1 && _areaStores.TryGetValue(segments[0], out var store))
+                i = 1;
+            else if (_noAreaStore != null)
+                store = _noAreaStore;
+            else
+                return null;
+
+            return processController(values, segments, i, store);
         }
 
         public ILookup<string, HttpActionDescriptor> GetActionMapping(HttpControllerDescriptor controllerDescriptor)

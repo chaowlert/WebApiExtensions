@@ -134,7 +134,6 @@
     <Compile Include="Formatters\JsonpFormatter.cs" />
     <Compile Include="Formatters\XmlHelper.cs" />
     <Compile Include="Handlers\JsonpHandler.cs" />
-    <Compile Include="Services\ExtendedContractResolver.cs" />
     <Compile Include="Services\ExcludeModelValidator.cs" />
     <Compile Include="Services\InjectAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

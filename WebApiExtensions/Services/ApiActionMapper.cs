@@ -68,18 +68,18 @@ namespace WebApiExtensions.Services
             }            
         }
 
-        public bool Process(IDictionary<string, object> values, string[] segments, int i)
+        public HttpControllerDescriptor Process(IDictionary<string, object> values, string[] segments, int i)
         {
             values.Add("controller", ControllerDescriptor.ControllerName);
-            values.Add("controllerDescriptor", ControllerDescriptor);
+            //values.Add("controllerDescriptor", ControllerDescriptor);
 
             if (segments.Length <= i)
             {
                 if (_itemsStore == null)
-                    return false;
+                    return null;
                 values.Add("action", "items");
                 values.Add("actionStore", _itemsStore);
-                return true;
+                return ControllerDescriptor;
             }
 
             var id = segments[i];
@@ -87,15 +87,15 @@ namespace WebApiExtensions.Services
             if (segments.Length > i)
             {
                 if (_itemActionStores == null || segments.Length > i + 1)
-                    return false;
+                    return null;
                 var action = segments[i];
                 var itemActionStore = _itemActionStores.GetValueOrDefault(action);
                 if (itemActionStore == null)
-                    return false;
+                    return null;
                 values.Add("action", action);
                 values.Add("id", id);
                 values.Add("actionStore", itemActionStore);
-                return true;
+                return ControllerDescriptor;
             }
 
             var nonItemActionStore = _nonItemActionStores?.GetValueOrDefault(id);
@@ -103,16 +103,16 @@ namespace WebApiExtensions.Services
             {
                 values.Add("action", id);
                 values.Add("actionStore", nonItemActionStore);
-                return true;
+                return ControllerDescriptor;
             }
             if (_itemStore != null)
             {
                 values.Add("action", "item");
                 values.Add("id", id);
                 values.Add("actionStore", _itemStore);
-                return true;
+                return ControllerDescriptor;
             }
-            return false;
+            return null;
         }
 
         ILookup<string, HttpActionDescriptor> _actionMapping;

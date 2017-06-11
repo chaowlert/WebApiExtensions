@@ -44,11 +44,7 @@ namespace System.Web.Http
             config.Services.Replace(typeof(IHttpControllerSelector), controllerSelector);
             config.Services.Replace(typeof(IHttpActionSelector), controllerSelector);
             config.Services.Replace(typeof(IApiExplorer), controllerSelector);
-            config.Routes.MapHttpRoute("default", prefix + "{*path}", null,
-                new
-                {
-                    controller = controllerSelector
-                });
+            config.Routes.MapHttpRoute("default", prefix + "{*path}");
         }
 
         public static void ExtendModelBinding(this HttpConfiguration config)
