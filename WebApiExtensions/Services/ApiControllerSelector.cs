@@ -136,7 +136,7 @@ namespace WebApiExtensions.Services
                 var desc = new ApiDescription
                 {
                     ActionDescriptor = actionDesc,
-                    Documentation = document.GetDocumentation(actionDesc),
+                    Documentation = document?.GetDocumentation(actionDesc),
                     HttpMethod = method,
                     RelativePath = getRelativePath(controllerKvp.Key, actionDesc),
                     Route = null,
@@ -177,7 +177,7 @@ namespace WebApiExtensions.Services
             return new ResponseDescription
             {
                 DeclaredType = actionDescriptor.ControllerDescriptor.ControllerType,
-                Documentation = doc.GetResponseDocumentation(actionDescriptor),
+                Documentation = doc?.GetResponseDocumentation(actionDescriptor),
                 ResponseType = actionDescriptor.ReturnType,
             };
         }
@@ -192,7 +192,7 @@ namespace WebApiExtensions.Services
                 {
                     Name = param.ParameterName,
                     ParameterDescriptor = param,
-                    Documentation = doc.GetDocumentation(param),
+                    Documentation = doc?.GetDocumentation(param),
                     Source = ApiParameterSource.FromUri,
                 };
                 list.Add(desc);
