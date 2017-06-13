@@ -158,17 +158,17 @@ namespace System.Net.Http
         {
             var error = new HttpError(message)
             {
-                {"Code", statusCode}
+                {"code", statusCode}
             };
             if (additionalInfo != null)
-                error.Add("AdditionalInfo", additionalInfo);
+                error.Add("additionalInfo", additionalInfo);
             return request.CreateErrorResponse(statusCode, error);
         }
         public static HttpResponseMessage CreateRequiredResponse(this HttpRequestMessage request, string paramName)
         {
             var additionalInfo = new JObject
             {
-                { "ParamName", paramName },
+                { "paramName", paramName },
             };
             return request.CreateErrorCodeResponse(HttpStatusCode.BadRequest, "Parameter is required", additionalInfo);
         }
@@ -176,18 +176,18 @@ namespace System.Net.Http
         {
             var additionalInfo = new JObject
             {
-                { "ParamName", paramName },
+                { "paramName", paramName },
             };
             if (format != null)
-                additionalInfo["Format"] = format;
+                additionalInfo["format"] = format;
             return request.CreateErrorCodeResponse(HttpStatusCode.BadRequest, "Input value is incorrect format", additionalInfo);
         }
         public static HttpResponseMessage CreateNotFoundResponse(this HttpRequestMessage request, string type, string id)
         {
             var additionalInfo = new JObject
             {
-                { "Type", type },
-                { "Id", id },
+                { "type", type },
+                { "id", id },
             };
             return request.CreateErrorCodeResponse(HttpStatusCode.NotFound, "Object is not found", additionalInfo);
         }

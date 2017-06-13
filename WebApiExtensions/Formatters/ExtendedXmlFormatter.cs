@@ -40,7 +40,7 @@ namespace WebApiExtensions.Formatters
             var json = JToken.FromObject(value, _serializer);
             var xdoc = json.ToXml();
             xdoc.Save(writeStream);
-            return TaskEx.Completed();
+            return TaskEx.CompletedTask;
         }
     }
 }

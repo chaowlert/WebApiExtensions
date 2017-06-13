@@ -21,7 +21,7 @@ namespace WebApiExtensions.Services
             var resolver = actionContext.RequestContext.Configuration.DependencyResolver;
             var model = _isEnumerable ? resolver.GetServices(_type) : resolver.GetService(_type);
             SetValue(actionContext, model);
-            return TaskEx.Completed();
+            return TaskEx.CompletedTask;
         }
     }
 }
