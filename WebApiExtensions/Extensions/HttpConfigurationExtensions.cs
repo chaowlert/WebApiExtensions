@@ -58,15 +58,27 @@ namespace System.Web.Http
 
         public static void SupportActionInjection(this HttpConfiguration config)
         {
-            config.ParameterBindingRules.Add(parameter =>
-            {
-                if (!parameter.ParameterType.IsInterface)
-                    return null;
-                if (!parameter.ParameterType.IsGenericType || parameter.ParameterType.GetGenericTypeDefinition() != typeof(IEnumerable<>))
-                    return new InjectionParameterBinding(parameter, false);
-                var type = parameter.ParameterType.GetGenericArguments()[0];
-                return !type.IsInterface ? null : new InjectionParameterBinding(parameter, true);
-            });
+            config.ParameterBindingRules.Add(GetInjectionBinding);
+        }
+
+        internal static Func<HttpParameterDescriptor, HttpParameterBinding> GetInjectionBinding = parameter =>
+        {
+            if (!parameter.ParameterType.IsInterface)
+                return null;
+            var elementType = parameter.ParameterType.GetEnumerableElementType();
+            if (elementType == null)
+                return new InjectionParameterBinding(parameter, false);
+            return elementType.IsInterface ? new InjectionParameterBinding(parameter, true) : null;
+        };
+
+        internal static bool IsEnumerable(this Type type)
+        {
+            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IEnumerable<>);
+        }
+
+        internal static Type GetEnumerableElementType(this Type type)
+        {
+            return type.IsEnumerable() ? type.GetGenericArguments()[0] : null;
         }
 
         internal static JsonSerializer GetJsonSerializer(this HttpConfiguration config)

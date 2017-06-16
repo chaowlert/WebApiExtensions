@@ -154,7 +154,7 @@ namespace System.Net.Http
             return (string)routeData.Values[key];
         }
 
-        public static HttpResponseMessage CreateErrorCodeResponse(this HttpRequestMessage request, HttpStatusCode statusCode, string message, JObject additionalInfo = null)
+        public static HttpResponseMessage CreateErrorCodeResponse(this HttpRequestMessage request, HttpStatusCode statusCode, string message, JToken additionalInfo = null)
         {
             var error = new HttpError(message)
             {

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
+using System.Reflection;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Description;
@@ -186,8 +187,20 @@ namespace WebApiExtensions.Services
         {
             var doc = _config.Services.GetDocumentationProvider();
             var list = new Collection<ApiParameterDescription>();
+            var hasInjectionBinding = actionDescriptor.Configuration.ParameterBindingRules.Contains(HttpConfigurationExtensions.GetInjectionBinding);
             foreach (var param in actionDescriptor.GetParameters())
             {
+                if (hasInjectionBinding)
+                {
+                    if (param.ParameterType.IsInterface)
+                    {
+                        var elementType = param.ParameterType.GetEnumerableElementType();
+                        if (elementType == null || elementType.IsInterface)
+                            continue;
+                    }
+                    if (param.ParameterBinderAttribute?.GetType() == typeof(InjectAttribute))
+                        continue;
+                }
                 var desc = new ApiParameterDescription
                 {
                     Name = param.ParameterName,

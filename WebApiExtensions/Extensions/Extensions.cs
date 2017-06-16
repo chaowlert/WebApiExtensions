@@ -7,11 +7,11 @@ using System.Web.Http.Dependencies;
 
 public static class Extensions
 {
-    public static T GetService<T>(this IDependencyResolver resolver)
+    public static T GetService<T>(this IDependencyScope scope)
     {
-        return (T)resolver.GetService(typeof(T));
+        return (T)scope.GetService(typeof(T));
     }
-    
+
     public static string ToQueryString(this NameValueCollection data)
     {
         var strs = data.Cast<string>()
