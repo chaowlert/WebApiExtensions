@@ -143,8 +143,7 @@ namespace System.Net.Http
             }
             var queryPart = string.Join("&", queries);
             var uri = new Uri("http://localhost?" + queryPart);
-            JObject json;
-            if (!uri.TryReadQueryAsJson(out json))
+            if (!uri.TryReadQueryAsJson(out JObject json))
                 throw new HttpResponseException(request.CreateBadFormatResponse("formData"));
             return Tuple.Create(json, httpContentDict);
         }
@@ -158,17 +157,17 @@ namespace System.Net.Http
         {
             var error = new HttpError(message)
             {
-                {"code", statusCode}
+                {"Code", statusCode}
             };
             if (additionalInfo != null)
-                error.Add("additionalInfo", additionalInfo);
+                error.Add("AdditionalInfo", additionalInfo);
             return request.CreateErrorResponse(statusCode, error);
         }
         public static HttpResponseMessage CreateRequiredResponse(this HttpRequestMessage request, string paramName)
         {
             var additionalInfo = new JObject
             {
-                { "paramName", paramName },
+                { "ParamName", paramName },
             };
             return request.CreateErrorCodeResponse(HttpStatusCode.BadRequest, "Parameter is required", additionalInfo);
         }
@@ -176,18 +175,18 @@ namespace System.Net.Http
         {
             var additionalInfo = new JObject
             {
-                { "paramName", paramName },
+                { "ParamName", paramName },
             };
             if (format != null)
-                additionalInfo["format"] = format;
+                additionalInfo["Format"] = format;
             return request.CreateErrorCodeResponse(HttpStatusCode.BadRequest, "Input value is incorrect format", additionalInfo);
         }
         public static HttpResponseMessage CreateNotFoundResponse(this HttpRequestMessage request, string type, string id)
         {
             var additionalInfo = new JObject
             {
-                { "type", type },
-                { "id", id },
+                { "Type", type },
+                { "Id", id },
             };
             return request.CreateErrorCodeResponse(HttpStatusCode.NotFound, "Object is not found", additionalInfo);
         }
