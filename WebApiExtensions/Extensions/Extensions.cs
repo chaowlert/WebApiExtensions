@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Net.Http;
@@ -7,6 +8,11 @@ using System.Web.Http.Dependencies;
 
 public static class Extensions
 {
+    internal static HashSet<T> ToHashSet<T>(this IEnumerable<T> source)
+    {
+        return new HashSet<T>(source);
+    }
+
     public static T GetService<T>(this IDependencyScope scope)
     {
         return (T)scope.GetService(typeof(T));
