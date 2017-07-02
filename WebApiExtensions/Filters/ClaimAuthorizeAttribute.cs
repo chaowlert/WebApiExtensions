@@ -48,7 +48,7 @@ namespace WebApiExtensions.Filters
         {
             var principal = actionContext.RequestContext.Principal as ClaimsPrincipal;
 
-            if (!principal.Identity.IsAuthenticated)
+            if (principal == null || !principal.Identity.IsAuthenticated)
             {
                 actionContext.Response = actionContext.Request.CreateResponse(HttpStatusCode.Unauthorized);
                 return TaskEx.CompletedTask;
@@ -57,6 +57,8 @@ namespace WebApiExtensions.Filters
             var valid = true;
             if (_claimValueSplit != null)
                 valid = principal.HasClaim(x => x.Type == this.ClaimType && _claimValueSplit.Contains(x.Value));
+            else if (!string.IsNullOrEmpty(this.ClaimType))
+                valid = principal.HasClaim(x => x.Type == this.ClaimType);
             if (valid && _roleSplit != null)
                 valid = _roleSplit.Any(principal.IsInRole);
 

@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
-using System.Reflection;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Description;
@@ -123,9 +122,10 @@ namespace WebApiExtensions.Services
             var document = _config.Services.GetDocumentationProvider();
             var list = new Collection<ApiDescription>();
             var type = typeof(ApiDescription);
-            var parameterDescriptions = type.GetProperty("ParameterDescriptions");
-            var supportedResponseFormatters = type.GetProperty("SupportedResponseFormatters");
-            var responseDescriptions = type.GetProperty("ResponseDescription");
+            var parameterDescriptions = type.GetProperty(nameof(ApiDescription.ParameterDescriptions));
+            var supportedResponseFormatters = type.GetProperty(nameof(ApiDescription.SupportedResponseFormatters));
+            var supportedRequestBodyFormatters = type.GetProperty(nameof(ApiDescription.SupportedRequestBodyFormatters));
+            var responseDescriptions = type.GetProperty(nameof(ApiDescription.ResponseDescription));
             foreach (var controllerKvp in GetControllerMapping()
                 .Where(it => !it.Value.GetCustomAttributes<ApiExplorerSettingsAttribute>().Any(attr => attr.IgnoreApi))
                 .OrderBy(it => it.Key))
@@ -144,6 +144,7 @@ namespace WebApiExtensions.Services
                 };
                 parameterDescriptions.SetValue(desc, getApiParameterDescription(actionDesc), null);
                 supportedResponseFormatters.SetValue(desc, getResponseFormatters(actionDesc), null);
+                supportedRequestBodyFormatters.SetValue(desc, getRequestBodyFormatters(actionDesc), null);
                 responseDescriptions.SetValue(desc, getResponseDescription(actionDesc), null);
                 list.Add(desc);
             }
@@ -171,6 +172,18 @@ namespace WebApiExtensions.Services
                 responseFormatters.Add(formatter);
             }
             return responseFormatters;
+        }
+        Collection<MediaTypeFormatter> getRequestBodyFormatters(HttpActionDescriptor actionDescriptor)
+        {
+            var requestBodyFormatters = new Collection<MediaTypeFormatter>();
+            foreach (var formatter in _config.Formatters)
+            {
+                if (actionDescriptor.ReturnType == null ||
+                    !formatter.CanReadType(actionDescriptor.ReturnType))
+                    continue;
+                requestBodyFormatters.Add(formatter);
+            }
+            return requestBodyFormatters;
         }
         ResponseDescription getResponseDescription(HttpActionDescriptor actionDescriptor)
         {
@@ -206,7 +219,9 @@ namespace WebApiExtensions.Services
                     Name = param.ParameterName,
                     ParameterDescriptor = param,
                     Documentation = doc?.GetDocumentation(param),
-                    Source = ApiParameterSource.FromUri,
+                    Source = param.ParameterBinderAttribute?.GetType() == typeof(FromBodyAttribute)
+                        ? ApiParameterSource.FromBody
+                        : ApiParameterSource.FromUri,
                 };
                 list.Add(desc);
             }
