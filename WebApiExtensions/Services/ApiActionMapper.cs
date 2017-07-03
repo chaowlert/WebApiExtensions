@@ -17,9 +17,10 @@ namespace WebApiExtensions.Services
         Dictionary<string, HttpActionDescriptor> _itemsStore;
         Dictionary<string, Dictionary<string, HttpActionDescriptor>> _itemActionStores;
         Dictionary<string, Dictionary<string, HttpActionDescriptor>> _nonItemActionStores;
-        public ApiActionMapper(HttpConfiguration config, string name, Type type)
+        public ApiActionMapper(HttpConfiguration config, string name, Type type, Func<string, string> nameConverter)
         {
             ControllerDescriptor = new HttpControllerDescriptor(config, name, type);
+            var actionName = typeof(ReflectedHttpActionDescriptor).GetField("_actionName", BindingFlags.Instance | BindingFlags.NonPublic); 
             foreach (var methodInfo in ControllerDescriptor.ControllerType.GetMethods(BindingFlags.Instance | BindingFlags.Public))
             {
                 var attributes = methodInfo.GetCustomAttributes();
@@ -27,6 +28,7 @@ namespace WebApiExtensions.Services
                     continue;
 
                 var action = new ReflectedHttpActionDescriptor(ControllerDescriptor, methodInfo);
+                actionName.SetValue(action, nameConverter(action.ActionName));
                 var store = SelectStore(action);
                 foreach (var httpMethod in action.SupportedHttpMethods)
                     store.Add(httpMethod.Method, action);

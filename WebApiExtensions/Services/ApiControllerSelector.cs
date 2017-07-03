@@ -17,7 +17,7 @@ namespace WebApiExtensions.Services
         readonly Dictionary<string, ApiActionMapper> _noAreaStore;
         readonly Dictionary<string, Dictionary<string, ApiActionMapper>> _areaStores;
         readonly HttpConfiguration _config;
-        public ApiControllerSelector(HttpConfiguration config)
+        public ApiControllerSelector(HttpConfiguration config, Func<string, string> nameConverter)
         {
             _config = config;
             var assembliesResolver = config.Services.GetAssembliesResolver();
@@ -26,14 +26,15 @@ namespace WebApiExtensions.Services
                                 type.Namespace.Contains(".Controllers")
                           select new
                           {
-                              Name = type.Name.Substring(0, type.Name.Length - 10).ToLower(),
+                              Name = nameConverter(type.Name.Substring(0, type.Name.Length - "Controller".Length)),
                               Area = (type.Namespace + ".").Split(new[] {".Controllers."}, StringSplitOptions.None).Last().ToLower(),
                               Type = type,
                           }
                           into item
                           group item by item.Area.Trim('.')).ToDictionary(g => g.Key,
-                              g => g.ToDictionary(item => item.Name,
-                                  item => new ApiActionMapper(config, (g.Key == string.Empty ? string.Empty : g.Key + '/') + item.Name, item.Type)));
+                              g => g.ToDictionary(
+                                  item => item.Name,
+                                  item => new ApiActionMapper(config, (g.Key == string.Empty ? string.Empty : g.Key + '/') + item.Name, item.Type, nameConverter)));
             _noAreaStore = stores.GetValueOrDefault(string.Empty);
             if (_noAreaStore != null)
                 stores.Remove(string.Empty);

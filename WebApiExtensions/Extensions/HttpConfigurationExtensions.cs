@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Web.Http.Controllers;
 using System.Web.Http.Description;
@@ -38,19 +39,34 @@ namespace System.Web.Http
                 config.Formatters.Add(extendedXmlFormatter);
         }
 
-        public static void SupportGraphController(this HttpConfiguration config, string prefix = "")
+        public static void SupportGraphController(this HttpConfiguration config, string prefix = "", UrlNamingConvention convention = UrlNamingConvention.LowerCase)
         {
-            var controllerSelector = new ApiControllerSelector(config);
+            var controllerSelector = new ApiControllerSelector(config, GetNameConverter(convention));
             config.Services.Replace(typeof(IHttpControllerSelector), controllerSelector);
             config.Services.Replace(typeof(IHttpActionSelector), controllerSelector);
             config.Services.Replace(typeof(IApiExplorer), controllerSelector);
             config.Routes.MapHttpRoute("default", prefix + "{*path}");
         }
 
+        private static Func<string, string> GetNameConverter(UrlNamingConvention convention)
+        {
+            switch (convention)
+            {
+                case UrlNamingConvention.LowerCase:
+                    return s => s.ToLower();
+                case UrlNamingConvention.SnakeCase:
+                    return s => s.BreakWords().Select(w => w.ToLower()).Join("_");
+                case UrlNamingConvention.KebabCase:
+                    return s => s.BreakWords().Select(w => w.ToLower()).Join("-");
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(convention), convention, null);
+            }
+        }
+
         public static void ExtendModelBinding(this HttpConfiguration config)
         {
-            var getBinders = typeof (DefaultActionValueBinder).GetMethod("GetDefaultParameterBinders", BindingFlags.Static | BindingFlags.NonPublic);
-            var rules = (ParameterBindingRulesCollection) getBinders.Invoke(null, null);
+            var getBinders = typeof(DefaultActionValueBinder).GetMethod("GetDefaultParameterBinders", BindingFlags.Static | BindingFlags.NonPublic);
+            var rules = (ParameterBindingRulesCollection)getBinders.Invoke(null, null);
             if (config.ParameterBindingRules.Contains(rules[2]))
                 config.ParameterBindingRules.Remove(rules[2]);
             config.Services.Replace(typeof(IActionValueBinder), new ApiActionValueBinder());
@@ -91,6 +107,12 @@ namespace System.Web.Http
             config.Properties["AZ_JsonSerializer"] = serializer;
             return serializer;
         }
+    }
 
+    public enum UrlNamingConvention
+    {
+        LowerCase,
+        SnakeCase,
+        KebabCase,
     }
 }

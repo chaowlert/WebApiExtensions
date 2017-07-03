@@ -29,5 +29,66 @@ public static class Extensions
     {
         return new HttpResponseException(response);
     }
+    enum WordType
+    {
+        Unknown,
+        UpperCase,
+        LowerCase,
+        ProperCase,
+    }
+    internal static IEnumerable<string> BreakWords(this string s)
+    {
+        var len = s.Length;
+        var pos = 0;
+        var last = 0;
+        var type = WordType.Unknown;
 
+        while (pos < len)
+        {
+            var c = s[pos];
+            if (c == '_')
+            {
+                if (last < pos)
+                {
+                    yield return s.Substring(last, pos - last);
+                    last = pos;
+                    type = WordType.Unknown;
+                }
+                last++;
+            }
+            else if (char.IsUpper(c))
+            {
+                if (type == WordType.Unknown)
+                    type = WordType.UpperCase;
+                else if (type != WordType.UpperCase && last < pos)
+                {
+                    yield return s.Substring(last, pos - last);
+                    last = pos;
+                    type = WordType.UpperCase;
+                }
+            }
+            else  //lower
+            {
+                if (type == WordType.Unknown)
+                    type = WordType.LowerCase;
+                else if (type == WordType.UpperCase)
+                {
+                    if (last < pos - 1)
+                    {
+                        yield return s.Substring(last, pos - last - 1);
+                        last = pos - 1;
+                    }
+                    type = WordType.ProperCase;
+                }
+            }
+            pos++;
+        }
+        if (last < pos)
+            yield return s.Substring(last, pos - last);
+    }
+
+    internal static string Join(this IEnumerable<string> values, string separator)
+    {
+        return string.Join(separator, values);
+    }
 }
