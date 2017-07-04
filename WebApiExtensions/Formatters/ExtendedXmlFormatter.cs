@@ -6,6 +6,7 @@ using System.Net.Http.Formatting;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using JsonNet.Extensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 

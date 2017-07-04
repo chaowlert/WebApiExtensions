@@ -133,7 +133,6 @@
     <Compile Include="Filters\NullToNotFoundAttribute.cs" />
     <Compile Include="Formatters\ExtendedXmlFormatter.cs" />
     <Compile Include="Formatters\JsonpFormatter.cs" />
-    <Compile Include="Formatters\XmlHelper.cs" />
     <Compile Include="Handlers\JsonpHandler.cs" />
     <Compile Include="Services\ExcludeModelValidator.cs" />
     <Compile Include="Services\InjectAttribute.cs" />
@@ -149,6 +148,12 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\JsonNet.Extensions\JsonNet.Extensions\JsonNet.Extensions.csproj">
+      <Project>{ae4ddd98-fde8-4330-a038-a3089516be29}</Project>
+      <Name>JsonNet.Extensions</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
